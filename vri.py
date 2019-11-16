@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 ########################################
 ######### FUNCOES AUXILIARES ###########
@@ -26,7 +27,6 @@ def simpson ( f , a , b ):
 
     erro = abs( sAB - sAC - sCB ) / 15.0
     resultado = sAC + sCB - erro
-
     return erro
 
 
@@ -38,16 +38,11 @@ def simpsonAdaptativo ( f , a , b , tol ):
     if tol > erro :
         return resultado
     else :
-        return simpsonAdaptativo( a , c , f , tol / 2.0 ) + simpsonAdaptativo( c , b , f , tol / 2.0 )
+        return simpsonAdaptativo( f , a , c , tol / 2.0 ) + simpsonAdaptativo( f , c , b , tol / 2.0 )
 
 
 def opacidade ( s ):
-    def densidade ( s ):
-        global i , k , dadosBinarios
-        return acesso( dadosBinarios , i , j , k ) / 255.0
-
-    dt = densidade( s )
-
+    dt = acesso( dadosBinarios , i , int(math.floor(s)) , k ) / 255.0
     if dt < 0.3 :
         return 0
     else :
@@ -56,10 +51,10 @@ def opacidade ( s ):
 
 def integralRenderizacaoVolumetrica ( s ):
     def funcaoRenderizacaoVolumetrica( s ):
-        integral_interna = -simpsonAdaptativo( opacidade , 0 , s , 0.0001 )
+        integral_interna = -simpsonAdaptativo( opacidade , 0 , s , 0.001 )
+        print(opacidade(s) * np.exp( integral_interna ))
         return opacidade(s) * np.exp( integral_interna )
-
-    return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , 255 )
+    return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , 255 , 0.001)
 
 
 ########################################
@@ -84,3 +79,13 @@ resultado = 0
 i = 0
 j = 0
 k = 0
+
+while k < 99:
+    i = 0
+    while i < 128:
+        j = 0
+        while j < 255:
+            print(integralRenderizacaoVolumetrica(j))
+            j += 1
+        i += 1
+    k += 1
