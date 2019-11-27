@@ -5,6 +5,23 @@ import math
 ######### FUNCOES AUXILIARES ###########
 ########################################
 
+def pgmwrite( list , width = 128 , height = 99 , filename = "output.pgm" , maxVal = 255 , magicNum = 'P2' ):
+  f = open(filename,'w')
+  f.write(magicNum + '\n')
+  f.write(str(width) + ' ' + str(height) + '\n')
+  f.write(str(maxVal) + '\n')
+  for i in range(height):
+    count = 1
+    for j in range(width):
+      f.write(str(list[i * width + j]) + ' ')
+      if count >= 17:
+        count = 1
+        f.write('\n')
+      else:
+        count = count + 1
+    f.write('\n')
+  f.close()
+
 def acesso ( vetor , i , j , k ):
     return vetor[k*256*256 + j*256 + i]
 
@@ -42,7 +59,7 @@ def simpsonAdaptativo ( f , a , b , tol ):
 
 
 def opacidade ( s ):
-    dt = acesso( dadosBinarios , i , int(math.floor(s)) , k ) / 255.0
+    dt = acesso( dadosBinarios , i_raio , int(math.floor(s)) , k ) / 255.0
     if dt < 0.3 :
         return 0
     else :
@@ -50,11 +67,10 @@ def opacidade ( s ):
 
 
 def integralRenderizacaoVolumetrica ( s ):
-    def funcaoRenderizacaoVolumetrica( s ):
-        integral_interna = -simpsonAdaptativo( opacidade , 0 , s , 0.001 )
-        print(opacidade(s) * np.exp( integral_interna ))
-        return opacidade(s) * np.exp( integral_interna )
-    return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , 255 , 0.001)
+    def funcaoRenderizacaoVolumetrica( t ):
+        integral_interna = -simpsonAdaptativo( opacidade , 0 , t , 0.01 )
+        return opacidade(t) * np.exp( integral_interna )
+    return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , s , 0.01)
 
 
 ########################################
@@ -83,9 +99,15 @@ k = 0
 while k < 99:
     i = 0
     while i < 128:
-        j = 0
-        while j < 255:
-            print(integralRenderizacaoVolumetrica(j))
-            j += 1
+        i_raio = 2*i
+        resultado = 0
+        res_1 = integralRenderizacaoVolumetrica(255)
+        i_raio += 1
+        resultado = 0
+        res_2 = integralRenderizacaoVolumetrica(255)
         i += 1
+        res = int(255*(res_1+res_2)/2)
+        saidaPGM.append(res)
     k += 1
+
+pgmwrite(saidaPGM)
