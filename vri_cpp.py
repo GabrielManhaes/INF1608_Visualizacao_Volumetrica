@@ -83,13 +83,12 @@ def opacidade ( s ):
     else :
         return 0.05 * ( dt - 0.3 )
 
-
 def funcaoRenderizacaoVolumetrica( t ):
-    integral_interna = -simpsonAdaptativo( opacidade , 0 , t , 0.001 )
+    integral_interna = -simpsonAdaptativo( opacidade , 0 , t , 0.01 )
     return opacidade(t) * math.exp( integral_interna )
     
-def integralRenderizacaoVolumetrica ( s ):
-    return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , s , 0.001)
+def integralRenderizacaoVolumetrica ( s ):     
+    return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , s , 0.01 ) / 2.43378288501
 
 
 ########################################
@@ -114,7 +113,7 @@ resultado = 0
 i = 0
 j = 0
 k = 0
-
+maxval = 0
 while k < 99:
     i = 0
     while i < 128:
@@ -125,8 +124,11 @@ while k < 99:
         resultado = 0
         res_2 = integralRenderizacaoVolumetrica(255)
         i += 1
-        res = int(255*(res_1+res_2)/2)
+	if (res_1+res_2)/2.0 > maxval:
+            maxval = (res_1+res_2)/2.0
+        res = int(255.0*(res_1+res_2)/2.)
         saidaPGM.append(res)
     k += 1
 
 pgmwrite(saidaPGM)
+print(maxval)
