@@ -7,7 +7,9 @@
 - Rodar os comandos
 
 ```
-shedskin vri_cpp.py
+shedskin vri.py
 make
-./vri_cpp
+./vri
 ```
+### TODO:
+- Tornar simpson adaptativo iterativo
