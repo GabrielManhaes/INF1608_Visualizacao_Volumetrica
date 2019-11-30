@@ -1,6 +1,6 @@
 # Visualização Volumétrica
 
-### Para gerar o .cpp e executável a partir do vri_cpp.py
+### Para gerar o .cpp e executável a partir do vri.py
 
 - Instalar o shedskin e suas dependências
 
