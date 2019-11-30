@@ -100,14 +100,14 @@ j = 0
 k = 0
 while k < 99:
     i = 0
-    while i < 128:
-        i_raio = 2*i
+    while i < 256:
+        i_raio = i
         resultado = 0
         res_1 = integralRenderizacaoVolumetrica(255)
         i_raio += 1
         resultado = 0
         res_2 = integralRenderizacaoVolumetrica(255)
-        i += 1
+        i += 2
         
         res = int(255.0*(res_1+res_2)/2.)
         saidaPGM.append(res)
