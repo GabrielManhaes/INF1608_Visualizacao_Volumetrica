@@ -20,7 +20,6 @@ def acesso ( vetor , i , j , k ):
     return vetor[k*65536 + j*256 + i]
 
 def simpson ( f , a , b ):
-    global resultado
 
     h = b - a
     c = ( a + b ) / 2.0
@@ -42,14 +41,13 @@ def simpson ( f , a , b ):
 
     erro = abs( sAB - sAC - sCB ) / 15.0
     resultado = sAC + sCB - erro
-    return erro
+    return erro, resultado
 
 
 def simpsonAdaptativo ( f , a , b , tol ):
-    global resultado
 
     c = ( a + b ) / 2.0
-    erro = simpson( f , a , b )
+    erro, resultado = simpson( f , a , b )
 
     if tol > erro :
         return resultado
@@ -94,7 +92,6 @@ while byte:
 
 raw.close()
 
-resultado = 0
 i = 0
 j = 0
 k = 0
@@ -102,15 +99,13 @@ while k < 99:
     i = 0
     while i < 256:
         i_raio = i
-        resultado = 0
         res_1 = integralRenderizacaoVolumetrica(255)
         i_raio += 1
-        resultado = 0
         res_2 = integralRenderizacaoVolumetrica(255)
         i += 2
         
         res = int(255.0*(res_1+res_2)/2.)
         saidaPGM.append(res)
     k += 1
-    
+
 pgmwrite(saidaPGM)
