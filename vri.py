@@ -10,26 +10,18 @@ def pgmwrite( list , width = 128 , height = 99 , filename = "output.pgm" , maxVa
   f.write(str(width) + ' ' + str(height) + '\n')
   f.write(str(maxVal) + '\n')
   for i in range(height):
-    count = 1
     for j in range(width):
       f.write(str(list[i * width + j]) + ' ')
-      if count >= 17:
-        count = 1
-        f.write('\n')
-      else:
-        count = count + 1
     f.write('\n')
   f.close()
 
+
 def acesso ( vetor , i , j , k ):
-    return vetor[k*256*256 + j*256 + i]
-
-def lerp ( v0 , v1 , step):
-    return ( 1 - step ) * v0 + step * v1
-
+    return vetor[k*65536 + j*256 + i]
 
 def simpson ( f , a , b ):
     global resultado
+
     h = b - a
     c = ( a + b ) / 2.0
     fa = f(a)
@@ -66,27 +58,24 @@ def simpsonAdaptativo ( f , a , b , tol ):
 
 
 def opacidade ( s ):
-    dt1 = acesso( dadosBinarios , i_raio , int(math.floor(s)) , k ) / 255.0
+    dt1 = acesso( dadosBinarios , i_raio , int(s) , k ) / 255.0
     try:
-        dt2 = acesso( dadosBinarios , i_raio , int(math.floor(s)) + 1 , k ) / 255.0
+        dt2 = acesso( dadosBinarios , i_raio , int(s) + 1 , k ) / 255.0
+        dt = (dt1 + dt2) / 2.0
     except:
-        dt2 = dt1
-
-    dt = lerp(dt1, dt2, 0.5)
+        dt = dt1
 
     if dt < 0.3 :
         return 0
     else :
-        return 0.05 * ( dt - 0.3 )
+        return 0.05 * dt - 0.015
 
-
+def funcaoRenderizacaoVolumetrica( t ):
+    integral_interna = -simpsonAdaptativo( opacidade , 0 , t , 0.01 ) # / 4.22555555556
+    return opacidade(t) * math.exp( integral_interna )
 
 def integralRenderizacaoVolumetrica ( s ):
-    def funcaoRenderizacaoVolumetrica( t ):
-        integral_interna = -simpsonAdaptativo( opacidade , 0 , t , 0.001 )
-        return opacidade(t) * math.exp( integral_interna )
-    return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , s , 0.001)
-
+    return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , s , 0.01 ) / 3.92285497929
 
 ########################################
 ########################################
@@ -97,20 +86,18 @@ dadosBinarios = []
 saidaPGM = []
 raw = open("vridados-head-8bit.raw", "rb")
 
-try:
-    byte = raw.read(1)
-    while byte != "":
-        dadosBinarios.append(ord(byte))
-        byte = raw.read(1)
-finally:
-    raw.close()
 
+byte = raw.read(1)
+while byte:
+    dadosBinarios.append(ord(byte))
+    byte = raw.read(1)
+
+raw.close()
 
 resultado = 0
 i = 0
 j = 0
 k = 0
-
 while k < 99:
     i = 0
     while i < 128:
@@ -121,8 +108,9 @@ while k < 99:
         resultado = 0
         res_2 = integralRenderizacaoVolumetrica(255)
         i += 1
-        res = int(255*(res_1+res_2)/2)
+        
+        res = int(255.0*(res_1+res_2)/2.)
         saidaPGM.append(res)
     k += 1
-
+    
 pgmwrite(saidaPGM)
