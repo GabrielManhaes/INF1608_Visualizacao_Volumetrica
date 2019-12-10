@@ -4,7 +4,7 @@ import math
 ######### FUNCOES AUXILIARES ###########
 ########################################
 
-def pgmwrite( list , width = 128 , height = 99 , filename = "output.pgm" , maxVal = 255 , magicNum = 'P2' ):
+def pgmwrite( list , filename , width = 128 , height = 99 , maxVal = 255 , magicNum = 'P2' ):
   f = open(filename,'w')
   f.write(magicNum + '\n')
   f.write(str(width) + ' ' + str(height) + '\n')
@@ -14,18 +14,6 @@ def pgmwrite( list , width = 128 , height = 99 , filename = "output.pgm" , maxVa
       f.write(str(list[i * width + j]) + ' ')
     f.write('\n')
   f.close()
-
-def pgmwrite2( list , width = 128 , height = 99 , filename = "output2.pgm" , maxVal = 255 , magicNum = 'P2' ):
-  f = open(filename,'w')
-  f.write(magicNum + '\n')
-  f.write(str(width) + ' ' + str(height) + '\n')
-  f.write(str(maxVal) + '\n')
-  for i in range(height):
-    for j in range(width):
-      f.write(str(list[i * width + j]) + ' ')
-    f.write('\n')
-  f.close()
-
 
 def acesso ( vetor , i , j , k ):
     return vetor[k*65536 + j*256 + i]
@@ -55,7 +43,7 @@ def simpson ( f , a , b ):
     return erro, resultado
 
 def simpsonNaoAdaptativo (f, a, b, h):
-    n = (b - a)/h
+    n = (b - a) / h
     soma = 0
     fesq = 0.0
     fdir = 0.0
@@ -79,13 +67,12 @@ def simpsonAdaptativo ( f , a , b , tol ):
         return simpsonAdaptativo( f , a , c , tol / 2.0 ) + simpsonAdaptativo( f , c , b , tol / 2.0 )
 
 
-def opacidade ( s ):
-    dt1 = acesso( dadosBinarios , i_raio , int(s) , k ) / 255.0
-    try:
-        dt2 = acesso( dadosBinarios , i_raio , int(s) + 1 , k ) / 255.0
-        dt = (dt1 + dt2) / 2.0
-    except:
-        dt = dt1
+def opacidade ( j ):
+    j_int = int(j)
+    ratio = j - j_int
+    dt1 = (1 - ratio) * acesso( dadosBinarios , i_raio , int(j) , k ) / 255.0
+    dt2 = ratio * acesso( dadosBinarios , i_raio , int(j) + 1 , k ) / 255.0
+    dt = (dt1 + dt2)
 
     if dt < 0.3 :
         return 0
@@ -93,19 +80,13 @@ def opacidade ( s ):
         return 0.05 * dt - 0.015
 
 def funcaoRenderizacaoVolumetrica( t ):
-    integral_interna = -simpsonAdaptativo( opacidade , 0 , t , 0.01 ) # / 4.22555555556
+    integral_interna = -simpsonAdaptativo( opacidade , 0 , t , 0.001 )
     return opacidade(t) * math.exp( integral_interna )
-
-def integralRenderizacaoVolumetrica ( s ):
-    return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , s , 0.01 ) / 3.92285497929
-
 
 def funcaoRenderizacaoVolumetrica2( t ):
-    integral_interna = -simpsonNaoAdaptativo( opacidade , 0 , t , 4.5 ) # / 4.22555555556
+    integral_interna = -simpsonNaoAdaptativo( opacidade , 0 , t , 4.5 )
     return opacidade(t) * math.exp( integral_interna )
 
-def integralRenderizacaoVolumetrica2 ( s ):
-    return simpsonNaoAdaptativo ( funcaoRenderizacaoVolumetrica2 , 0 , s , 4.5 ) / 3.92285497929
 
 ########################################
 ########################################
@@ -114,7 +95,6 @@ def integralRenderizacaoVolumetrica2 ( s ):
 
 dadosBinarios = []
 saidaPGM = []
-saidaPGM_NA = []
 raw = open("vridados-head-8bit.raw", "rb")
 
 
@@ -126,37 +106,35 @@ while byte:
 raw.close()
 
 i = 0
-j = 0
 k = 0
 while k < 99:
     i = 0
-    while i < 256:
-        i_raio = i
-        res_1 = integralRenderizacaoVolumetrica(255)
+    while i < 128:
+        i_raio = 2*i
+        res_1 = simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , 254 , 0.001 )
         i_raio += 1
-        res_2 = integralRenderizacaoVolumetrica(255)
-        i += 2
+        res_2 = simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , 254 , 0.001 )
+        i += 1
         
         res = int(255.0*(res_1+res_2)/2.)
         saidaPGM.append(res)
     k += 1
 
-pgmwrite(saidaPGM)
+pgmwrite(saidaPGM, "adaptativo.pgm")
+saidaPGM = []
 
 i = 0
-j = 0
 k = 0
 while k < 99:
     i = 0
-    while i < 256:
-        i_raio = i
-        res_1 = integralRenderizacaoVolumetrica2(255)
+    while i < 128:
+        i_raio = 2*i
+        res_1 = simpsonNaoAdaptativo ( funcaoRenderizacaoVolumetrica2 , 0 , 254 , 4.5 )
         i_raio += 1
-        res_2 = integralRenderizacaoVolumetrica2(255)
-        i += 2
-        
+        res_2 = simpsonNaoAdaptativo ( funcaoRenderizacaoVolumetrica2 , 0 , 254 , 4.5 )
+        i += 1
         res = int(255.0*(res_1+res_2)/2.)
-        saidaPGM_NA.append(res)
+        saidaPGM.append(res)
     k += 1
 
-pgmwrite2(saidaPGM_NA)
+pgmwrite(saidaPGM, "naoadaptativo.pgm")

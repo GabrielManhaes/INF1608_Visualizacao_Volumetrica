@@ -1,15 +1,13 @@
-SHEDSKIN_LIBDIR=/usr/share/shedskin/lib
+SHEDSKIN_LIBDIR=/usr/local/lib/python2.7/dist-packages/shedskin/lib
 CC=g++
 CCFLAGS=-O2 -march=native -Wno-deprecated $(CPPFLAGS) -I. -I${SHEDSKIN_LIBDIR}
-LFLAGS=-lgc -lpcre $(LDFLAGS)
+LFLAGS=-lgc $(LDFLAGS)
 
-CPPFILES=/home/miguel/github/INF1608_Visualizacao_Volumetrica/vri.cpp \
-	${SHEDSKIN_LIBDIR}/re.cpp \
+CPPFILES=/home/gabriel/INF1608_Visualizacao_Volumetrica/vri.cpp \
 	${SHEDSKIN_LIBDIR}/math.cpp \
 	${SHEDSKIN_LIBDIR}/builtin.cpp
 
-HPPFILES=/home/miguel/github/INF1608_Visualizacao_Volumetrica/vri.hpp \
-	${SHEDSKIN_LIBDIR}/re.hpp \
+HPPFILES=/home/gabriel/INF1608_Visualizacao_Volumetrica/vri.hpp \
 	${SHEDSKIN_LIBDIR}/math.hpp \
 	${SHEDSKIN_LIBDIR}/builtin.hpp
 
