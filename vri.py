@@ -15,6 +15,17 @@ def pgmwrite( list , width = 128 , height = 99 , filename = "output.pgm" , maxVa
     f.write('\n')
   f.close()
 
+def pgmwrite2( list , width = 128 , height = 99 , filename = "output2.pgm" , maxVal = 255 , magicNum = 'P2' ):
+  f = open(filename,'w')
+  f.write(magicNum + '\n')
+  f.write(str(width) + ' ' + str(height) + '\n')
+  f.write(str(maxVal) + '\n')
+  for i in range(height):
+    for j in range(width):
+      f.write(str(list[i * width + j]) + ' ')
+    f.write('\n')
+  f.close()
+
 
 def acesso ( vetor , i , j , k ):
     return vetor[k*65536 + j*256 + i]
@@ -42,6 +53,19 @@ def simpson ( f , a , b ):
     erro = abs( sAB - sAC - sCB ) / 15.0
     resultado = sAC + sCB - erro
     return erro, resultado
+
+def simpsonNaoAdaptativo (f, a, b, h):
+    n = (b - a)/h
+    soma = 0
+    fesq = 0.0
+    fdir = 0.0
+
+    for i in range (int(n - 1)):
+        fesq = fdir
+        fdir = f(a + h * (i + 1))
+        soma = soma + (fesq + 4*f(a + h * i + (h/2)) + fdir)
+    
+    return soma
 
 
 def simpsonAdaptativo ( f , a , b , tol ):
@@ -75,6 +99,14 @@ def funcaoRenderizacaoVolumetrica( t ):
 def integralRenderizacaoVolumetrica ( s ):
     return simpsonAdaptativo ( funcaoRenderizacaoVolumetrica , 0 , s , 0.01 ) / 3.92285497929
 
+
+def funcaoRenderizacaoVolumetrica2( t ):
+    integral_interna = -simpsonNaoAdaptativo( opacidade , 0 , t , 4.5 ) # / 4.22555555556
+    return opacidade(t) * math.exp( integral_interna )
+
+def integralRenderizacaoVolumetrica2 ( s ):
+    return simpsonNaoAdaptativo ( funcaoRenderizacaoVolumetrica2 , 0 , s , 4.5 ) / 3.92285497929
+
 ########################################
 ########################################
 ########################################
@@ -82,6 +114,7 @@ def integralRenderizacaoVolumetrica ( s ):
 
 dadosBinarios = []
 saidaPGM = []
+saidaPGM_NA = []
 raw = open("vridados-head-8bit.raw", "rb")
 
 
@@ -109,3 +142,21 @@ while k < 99:
     k += 1
 
 pgmwrite(saidaPGM)
+
+i = 0
+j = 0
+k = 0
+while k < 99:
+    i = 0
+    while i < 256:
+        i_raio = i
+        res_1 = integralRenderizacaoVolumetrica2(255)
+        i_raio += 1
+        res_2 = integralRenderizacaoVolumetrica2(255)
+        i += 2
+        
+        res = int(255.0*(res_1+res_2)/2.)
+        saidaPGM_NA.append(res)
+    k += 1
+
+pgmwrite2(saidaPGM_NA)
