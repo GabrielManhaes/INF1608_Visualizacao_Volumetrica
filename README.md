@@ -52,4 +52,5 @@ Tempo gasto em cada função com tol = 0.01 recursivo (execução em Python):
 A execução pelo shedskin leva pouco mais de 1 segundo com os mesmos valores de tolerância.
 
 ### TODO:
-- Tornar simpson adaptativo iterativo
+
+- Shear Warp
